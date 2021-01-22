@@ -3,9 +3,12 @@ import sys
 import json
 import requests
 from flask import request
+from flask_socketio import SocketIO,send
 
 from flask import Flask
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'frank1971'
+socketio = SocketIO(app,cors_allowed_origins='*')
 
 conn = sqlite3.connect('mydatabase.db', check_same_thread=False)
 
@@ -30,7 +33,6 @@ def create_producto(conn, producto):
 if conn is not None:
    with open('producto.sql','r') as file:
      sql = file.read()
-     print sql
      create_table(conn,sql)
 
 def load_table(conn,lista):
@@ -39,7 +41,6 @@ def load_table(conn,lista):
      prod_dic = (prod['codigointerno'],prod['precioCompra'],prod['proveedor'],prod['description'],prod['codigoProveedor'],prod['precioVenta'],prod['ubicacion'],prod['barcode'])
      
      if prod['codigointerno'] != '':
-       print prod_dic
        create_producto(conn,prod_dic)
 
 def convertToObject(row):
@@ -69,10 +70,12 @@ if conn is None:
 @app.route('/find', methods=['GET'])
 def find_producto():
    codigo = request.args.get('codigo')
-   return findByProducto(codigo)
+   lista = findByProducto(codigo)
+   send(json.dumps(lista),namespace='/', broadcast=True)
+   return lista
   
 if __name__ == '__main__':
-    app.run()
+   socketio.run(app,host='0.0.0.0',port='5000') 
 
 
 
