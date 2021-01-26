@@ -4,12 +4,14 @@ import json
 import requests
 from flask import request
 from flask_socketio import SocketIO,send
+import uuid
 
 from flask import Flask
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'frank1971'
-socketio = SocketIO(app,cors_allowed_origins='*')
-
+#socketio = SocketIO(app,cors_credentials=True, cors_allowed_origins=['http://192.168.100.13:9001'])
+socketio = SocketIO(app,cors_credentials=True, cors_allowed_origins='*')
+#socketio = SocketIO(app)
 conn = sqlite3.connect('mydatabase.db', check_same_thread=False)
 
 def create_table(conn, create_table_sql):
@@ -44,7 +46,8 @@ def load_table(conn,lista):
        create_producto(conn,prod_dic)
 
 def convertToObject(row):
-  return {"codigointerno":row[0],"precioCompra":row[1], "proveedor":row[2],"description":row[3],"codigoProveedor":row[4],"precioVenta":row[5],"ubicacion":row[6],"barcode":row[7]}
+  uid = uuid.uuid1()
+  return {"id":str(uid),"codigointerno":row[0],"precioCompra":row[1], "proveedor":row[2],"description":row[3],"codigoProveedor":row[4],"precioVenta":row[5],"ubicacion":row[6],"barcode":row[7],"existencia":0,"cantidad":1,"total":row[5],"active":True}
 
 def findByProducto(codigo):
   cur  = conn.cursor()
@@ -75,7 +78,7 @@ def find_producto():
    return lista
   
 if __name__ == '__main__':
-   socketio.run(app,host='0.0.0.0',port='5000') 
-
+   socketio.run(app,host='192.168.100.9',port='5000',debug=True) 
+#   socketio.run(app,port='5000') 
 
 
