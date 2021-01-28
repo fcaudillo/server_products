@@ -5,6 +5,7 @@ import requests
 from flask import request
 from flask_socketio import SocketIO,send
 import uuid
+import eventlet
 
 from flask import Flask
 app = Flask(__name__)
@@ -60,6 +61,11 @@ def findByProducto(codigo):
   rows = cur.fetchall()
   if len(rows) > 0:
     return convertToObject(rows[0])
+
+  cur.execute("select * from producto where codigoProveedor = ?",(codigo,))
+  rows = cur.fetchall()
+  if len(rows) > 0:
+    return convertToObject(rows[0])
   return {}
 
 #Cambiar a conn is not None:
@@ -76,9 +82,14 @@ def find_producto():
    lista = findByProducto(codigo)
    send(json.dumps(lista),namespace='/', broadcast=True)
    return lista
+
+@app.route('/test',methods=['GET'])
+def prueba():
+   return "<h1> Hola mundo </h1>"
   
 if __name__ == '__main__':
-   socketio.run(app,host='192.168.100.9',port='5000',debug=True) 
+   eventlet.wsgi.server(eventlet.wrap_ssl(eventlet.listen(('192.168.100.9', 5000)),certfile ='server_cert.pem', keyfile = 'server_key.pem',server_side = True),app)
+#   socketio.run(app,ssl_context='adhoc', host='192.168.100.9',port='5000',debug=True) 
 #   socketio.run(app,port='5000') 
 
 
