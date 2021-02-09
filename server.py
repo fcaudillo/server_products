@@ -6,6 +6,10 @@ from flask import request
 from flask_socketio import SocketIO,send
 import uuid
 import eventlet
+import notify2
+
+notify2.init("News Notifier")
+
 
 from flask import Flask
 app = Flask(__name__)
@@ -41,7 +45,7 @@ if conn is not None:
 def load_table(conn,lista):
    #lista = json.loads(json_string)
    for prod in lista:
-     prod_dic = (prod['codigointerno'],prod['precioCompra'],prod['proveedor'],prod['description'],prod['codigoProveedor'],prod['precioVenta'],prod['ubicacion'],prod['barcode'])
+     prod_dic = (prod['codigointerno'],prod['precioCompra'],prod['proveedor'],prod['description'],(prod['codigoProveedor']).strip(),prod['precioVenta'],prod['ubicacion'],(prod['barcode']).strip())
      
      if prod['codigointerno'] != '':
        create_producto(conn,prod_dic)
@@ -81,6 +85,11 @@ def find_producto():
    codigo = request.args.get('codigo')
    lista = findByProducto(codigo)
    send(json.dumps(lista),namespace='/', broadcast=True)
+   msg = '$' + str(lista['precioVenta']) + '  -- ' +  lista['description'];
+   n = notify2.Notification(summary=msg, message="Tlapeleria", icon='')
+   n.set_timeout(30)
+   n.show()
+
    return lista
 
 @app.route('/test',methods=['GET'])
