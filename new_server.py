@@ -7,13 +7,18 @@ from flask_socketio import SocketIO,send
 import uuid
 import eventlet
 import notify2
+from escpos.printer import Usb
+from ticket import Ticket
+from flask_cors import CORS
 
 notify2.init("News Notifier")
 
+printer = None
 
 from flask import Flask
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'frank1971'
+CORS(app)
 #socketio = SocketIO(app,cors_credentials=True, cors_allowed_origins=['http://192.168.100.13:9001'])
 socketio = SocketIO(app,cors_credentials=True, cors_allowed_origins='*')
 #socketio = SocketIO(app)
@@ -114,7 +119,31 @@ def find_producto():
 @app.route('/test',methods=['GET'])
 def prueba():
    return "<h1> Hola mundo </h1>"
-  
+
+@app.route('/print_ticket/',methods=['GET','POST'])
+def printTicket():
+  print("Impresion de ticket")
+  ticket_data = request.get_json()
+  print ("1..")
+  print (ticket_data)
+  def_page = {
+  "ancho_ticket": 46,
+  "ancho_precio":5,
+  "ancho_total":6,
+  "ancho_cantidad": 4,
+  "lineas_x_descripcion": 3,
+  "decimales":1
+  }
+  global printer
+  if printer == None:
+    printer = Usb(0x04b8, 0x0e15)
+  ticket = Ticket(printer, def_page)
+  ticket.print_ticket(ticket_data)
+
+  return {"code": 200, "message":"success"}   
+
+
+
 if __name__ == '__main__':
    eventlet.wsgi.server(eventlet.wrap_ssl(eventlet.listen(('192.168.100.9', 5000)),certfile ='server_cert.pem', keyfile = 'server_key.pem',server_side = True),app)
 #   socketio.run(app,ssl_context='adhoc', host='192.168.100.9',port='5000',debug=True) 
