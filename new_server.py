@@ -111,7 +111,7 @@ def find_producto():
    send(json.dumps(lista),namespace='/', broadcast=True)
    msg = '$' + str(lista['precioVenta']) + '  -- ' +  lista['description'];
    n = notify2.Notification(summary=msg, message="Tlapeleria", icon='')
-   n.set_timeout(5)
+   #n.set_timeout(1)
    n.show()
 
    return lista
