@@ -13,11 +13,17 @@ class Ticket:
 
 
   def format_numero(self, numero, longitud,decimales=0):
+    print('numero:',numero)
+    print('decimales:',decimales)
     esentero = False if numero - int(numero) > 0 else True
     if esentero:
-      cant = ("%" + str(longitud) + "." + str(decimales) +  "f") % numero
+      cant = ("%" + str(longitud) + "." + str(0) +  "f") % numero
+      print('es entero')
     else:
       cant = ("%7."+ str(decimales) +"f") % numero
+      print('es decimal')
+      print(decimales)
+    print(cant)
     cant = cant.strip()[:longitud].rjust(longitud)
     return cant
 
@@ -33,7 +39,8 @@ class Ticket:
   def imprimir_producto(self, producto):
     articulo = "("+str(producto['codigointerno']) + ")"+producto['description']
     decimales = self.def_page['decimales']
-    renglon = self.format_numero(producto['cantidad'],self.def_page['ancho_cantidad'])
+    decimalesCantidad = self.def_page['decimalesCantidad']
+    renglon = self.format_numero(producto['cantidad'],self.def_page['ancho_cantidad'],decimalesCantidad)
     len_desc = self.def_page['ancho_ticket'] - self.def_page['ancho_cantidad'] - self.def_page['ancho_precio'] - self.def_page['ancho_total'] - 3
     renglon = renglon + " " + articulo[:len_desc].ljust(len_desc)
     renglon = renglon + " " + self.format_numero(producto['precioVenta'],self.def_page['ancho_precio'],decimales)

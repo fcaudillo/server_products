@@ -95,6 +95,7 @@ class Scanner(Thread):
             51:(",","<"),
             52:(".",">"),
             53:("/","?"),
+            55:("*","*"),
             # 54 RIGHT SHIFT
             57:(" "," "),
             71:("7","7"),
@@ -222,12 +223,15 @@ class Scanner(Thread):
                             if event.type == evdev.ecodes.EV_KEY:
                                 # _logger.debug('Evdev Keyboard event %s',evdev.categorize(event))
                                 #print ('evdev event %s ', evdev.categorize(event))
+                                print ('event code: ', event.code)
                                 if event.value == 1: # keydown events
                                     if event.code in self.keymap:
                                         if device.shift:
                                             device.barcode.append(self.keymap[event.code][1])
+                                            print 'con shift ', self.keymap[event.code][1]
                                         else:
                                             device.barcode.append(self.keymap[event.code][0])
+                                            print "sin shift", self.keymap[event.code][0]
                                     elif event.code == 42 or event.code == 54: # SHIFT
                                         device.shift = True
                                     elif event.code == 15:

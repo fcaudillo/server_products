@@ -10,6 +10,7 @@ import notify2
 from escpos.printer import Usb
 from ticket import Ticket
 from flask_cors import CORS
+import re
 
 notify2.init("News Notifier")
 
@@ -23,6 +24,8 @@ CORS(app)
 socketio = SocketIO(app,cors_credentials=True, cors_allowed_origins='*')
 #socketio = SocketIO(app)
 conn = sqlite3.connect('mydatabase.db', check_same_thread=False)
+
+p = re.compile('(\d*)[*](\d*)')
 
 def create_table(conn, create_table_sql):
     try:
@@ -104,10 +107,24 @@ if conn is None:
 def find_producto():
    print("nuevo  find producto")
    codigo = request.args.get('codigo')
+   print ('codigo:',codigo)
+   m = p.match(codigo)
+   cantidad = 1
+   banderaAddToTicket = False;
+   if m:
+     codigo = m.groups()[0]
+     cantidad = float(m.groups()[1])
+     banderaAddToTicket = True;
+
+   print ('codigo1: ', codigo, ' cantidad: ', cantidad);
    lista = findByProductoDB(codigo)
+   lista["addToTicket"] = 0
    if lista is None: 
       print ("Datos en local")
       lista = findByProducto(codigo)
+   else:
+      lista['cantidad'] = cantidad
+   lista["addToTicket"] = 1 if banderaAddToTicket else 0 
    send(json.dumps(lista),namespace='/', broadcast=True)
    msg = '$' + str(lista['precioVenta']) + '  -- ' +  lista['description'];
    n = notify2.Notification(summary=msg, message="Tlapeleria", icon='')
@@ -132,7 +149,8 @@ def printTicket():
   "ancho_total":6,
   "ancho_cantidad": 4,
   "lineas_x_descripcion": 3,
-  "decimales":1
+  "decimales":1,
+  "decimalesCantidad":2
   }
   global printer
   if printer == None:

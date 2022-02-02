@@ -100,6 +100,8 @@ def find_producto():
    print("nuevo  find producto")
    codigo = request.args.get('codigo')
    lista = findByProductoDB(codigo)
+   print("busqueda producto desde bd")
+   print(lista)
    if lista is None: 
       print ("Datos en local")
       lista = findByProducto(codigo)
